@@ -1,0 +1,322 @@
+.data
+A: .word 	0:3
+B: .word	3:3
+C: .word	6:3
+D: .word	9:3
+E: .word	12:3
+F: .word	15:3
+G: .asciiz "NON INVERTIBLE"
+H: .asciiz "   "
+I: .asciiz "\n"
+
+
+.text
+la $s0, A
+la $s1, B
+la $s2, C
+la $s3, D
+la $s4, E
+la $s5, F
+li $t1, 0
+li $t2, 0
+li $t4, 0
+
+forA:
+	beq $t1, 3, forB
+	li $v0,5
+	syscall
+	addi $t3, $t1, 0
+	sll $t3, $t3, 2
+	add $t3, $t3, $s0
+	sw $v0, 0($t3)
+	addi $t1, $t1, 1
+	j forA
+forB:
+	beq $t2, 3, forC
+	li $v0,5
+	syscall
+	move $t3, $t2
+	sll $t3, $t3, 2
+	add $t3, $t3, $s1
+	sw $v0, 0($t3)
+	addi $t2, $t2, 1
+	j forB
+forC:
+	beq $t4, 3, continue
+	li $v0,5
+	syscall
+	addi $t3, $t4, 0
+	sll $t3, $t3, 2
+	add $t3, $t3, $s2
+	sw $v0, 0($t3)
+	addi $t4, $t4, 1
+	j forC
+	
+continue:
+	la $a0, I
+	li $v0, 4
+	syscall
+	jal det3
+	#add $s7, $v0, $zero
+	mtc1 $v0, $f10
+  	cvt.s.w $f10, $f10
+	beqz $v0, Not
+	jal init1
+	jal init2
+	j print
+	
+Not:
+	la $a0, G
+	li $v0, 4
+	syscall
+	j end
+	
+det2:
+	mul $t0, $a0, $a3
+	mul $t6, $a1, $a2
+	sub $v0, $t0, $t6
+	jr $ra
+	
+	
+det3:
+	li $t1, 0
+	li $t8, 0
+	li $t2 , 1
+	li $t3 , 2
+	sub $sp, $sp, 4
+	sw $ra , 0($sp)
+	for6:
+		bgt $t1, 2, endOfFor6
+		li $t6, 2
+		div $t1, $t6
+		mflo $t0
+		mfhi $t7
+		bnez $t0, label2
+		sub $t2, $t2, $t1
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s1
+		lw $a0, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s2
+		lw $a3, 0($t6)
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s2
+		lw $a1, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s1
+		lw $a2, 0($t6)
+		jal det2
+		beq $t7, 1, label1
+		sw $v0, 0($s3)
+		lw $t9, 0($s0)
+		mul $v0, $v0 , $t9
+		add $t8, $t8 , $v0
+		addi $t1, $t1, 1
+		j for6
+			
+		label1:
+			mul $v0, $v0, -1
+			sw $v0, 4($s3)
+			lw $t9, 4($s0)
+			mul $v0, $v0 , $t9
+			add $t8, $t8, $v0
+			addi $t1, $t1, 1
+			j for6
+		label2:
+			sub $t3, $t3, 1
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s1
+			lw $a0, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s2
+			lw $a3, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s1
+			lw $a1, 0($t6)
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s2
+			lw $a2, 0($t6)
+			jal det2
+			sw $v0, 8($s3)
+			lw $t9, 8($s0)
+			mul $v0, $v0 , $t9
+			add $t8, $t8, $v0
+			addi $t1, $t1, 1
+			j for6
+			
+	endOfFor6:
+		add $v0, $t8, $zero
+		lw $ra, 0($sp)
+		addi $sp, $sp, 4
+		jr $ra
+		
+init1:						
+	li $t1, 0
+	li $t8, 0
+	li $t2 , 1
+	li $t3 , 2
+	sub $sp, $sp, 4
+	sw $ra , 0($sp)
+	For1:
+		bgt $t1, 2, endOfFor1
+		li $t6, 2
+		div $t1, $t6
+		mflo $t0
+		mfhi $t7
+		bnez $t0, label12
+		sub $t2, $t2, $t1
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s2
+		lw $a0, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s0
+		lw $a3, 0($t6)
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s0
+		lw $a1, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s2
+		lw $a2, 0($t6)
+		jal det2
+		beq $t7, 1, label11
+		sw $v0, 0($s4)
+		addi $t1, $t1, 1
+		j For1
+			
+		label11:
+			mul $v0, $v0, -1
+			sw $v0, 4($s4)
+			addi $t1, $t1, 1
+			j For1
+		label12:
+			sub $t3, $t3, 1
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s2
+			lw $a0, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s0
+			lw $a3, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s2
+			lw $a1, 0($t6)
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s0
+			lw $a2, 0($t6)
+			jal det2
+			sw $v0, 8($s4)
+			addi $t1, $t1, 1
+			j For1
+			
+	endOfFor1:
+		lw $ra, 0($sp)
+		addi $sp, $sp, 4
+		jr $ra
+
+init2:			
+	li $t1, 0
+	li $t8, 0
+	li $t2 , 1
+	li $t3 , 2
+	sub $sp, $sp, 4
+	sw $ra , 0($sp)
+	For2:
+		bgt $t1, 2, endOfFor2
+		li $t6, 2
+		div $t1, $t6
+		mflo $t0
+		mfhi $t7
+		bnez $t0, label22
+		sub $t2, $t2, $t1
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s0
+		lw $a0, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s1
+		lw $a3, 0($t6)
+		mul $t6, $t2, 4
+		add $t6, $t6 , $s1
+		lw $a1, 0($t6)
+		mul $t6, $t3, 4
+		add $t6, $t6 , $s0
+		lw $a2, 0($t6)
+		jal det2
+		beq $t7, 1, label21
+		sw $v0, 0($s5)
+		addi $t1, $t1, 1
+		j For2
+			
+		label21:
+			mul $v0, $v0, -1
+			sw $v0, 4($s5)
+			addi $t1, $t1, 1
+			j For2
+		label22:
+			sub $t3, $t3, 1
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s0
+			lw $a0, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s1
+			lw $a3, 0($t6)
+			mul $t6, $t3, 4
+			add $t6, $t6 , $s0
+			lw $a1, 0($t6)
+			mul $t6, $t2, 4
+			add $t6, $t6 , $s1
+			lw $a2, 0($t6)
+			jal det2
+			sw $v0, 8($s5)
+			addi $t1, $t1, 1
+			j For2
+			
+	endOfFor2:
+		lw $ra, 0($sp)
+		addi $sp, $sp, 4
+		jr $ra
+				
+print:				
+	li $t0, 0
+	li $t5 , 3
+	lastFor:
+		beq $t0, 3, end
+		addi $t3, $t0, 0
+		sll $t3, $t3, 2
+		add $t3, $t3, $s3
+		lw $t1, 0($t3)
+		mtc1 $t1, $f1
+  		cvt.s.w $f1, $f1
+		div.s $f12, $f1, $f10
+		li $v0, 2
+		syscall
+		la $a0, H
+		li $v0, 4
+		syscall
+		addi $t3, $t0, 0
+		sll $t3, $t3, 2
+		add $t3, $t3, $s4
+		lw $t1, 0($t3)
+		mtc1 $t1, $f1
+  		cvt.s.w $f1, $f1
+		div.s $f12, $f1, $f10
+		li $v0, 2
+		syscall
+		la $a0, H
+		li $v0, 4
+		syscall
+		addi $t3, $t0, 0
+		sll $t3, $t3, 2
+		add $t3, $t3, $s5
+		lw $t1, 0($t3)
+		mtc1 $t1, $f1
+  		cvt.s.w $f1, $f1
+		div.s $f12, $f1, $f10
+		li $v0, 2
+		syscall
+		la $a0, I
+		li $v0, 4
+		syscall
+		addi $t0, $t0, 1
+		j lastFor
+		
+end:
+	li $v0, 10
